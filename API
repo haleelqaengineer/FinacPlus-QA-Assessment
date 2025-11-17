@@ -1,0 +1,68 @@
+const { test, expect } = require('@playwright/test');
+
+test('API Automation – ReqRes', async ({ request }) => {
+
+  // ----------------------------------------
+  // 1. CREATE USER
+  // ----------------------------------------
+
+  const createResponse = await request.post('https://reqres.in/api/users', {
+    data: {
+      name: "John Doe",
+      job: "Engineer"
+    }
+  });
+
+  // Validate status code
+  expect(createResponse.status()).toBe(201);
+
+  const createData = await createResponse.json();
+  console.log("Create Response:", createData);
+
+  // Store userId
+  const userId = createData.id;
+  expect(userId).toBeTruthy();
+
+
+  // ----------------------------------------
+  // 2. GET CREATED USER DETAILS
+  // ----------------------------------------
+
+  const getResponse = await request.get(`https://reqres.in/api/users/${userId}`);
+
+  // Validate status code
+  expect(getResponse.status()).toBe(200);
+
+  const getData = await getResponse.json();
+  console.log("Get Response:", getData);
+
+  // Note: reqres.in returns dummy fixed users,
+  // so direct field match is not possible.
+  // Validate response structure.
+  expect(getData.data).toHaveProperty("id");
+  expect(getData.data.id).toBe(Number(userId));
+
+
+  // ----------------------------------------
+  // 3. UPDATE USER
+  // ----------------------------------------
+
+  const updatedName = "Michael Updated";
+
+  const updateResponse = await request.put(`https://reqres.in/api/users/${userId}`, {
+    data: {
+      name: updatedName,
+      job: "Senior Engineer"
+    }
+  });
+
+  // Validate status
+  expect(updateResponse.status()).toBe(200);
+
+  const updateData = await updateResponse.json();
+  console.log("Update Response:", updateData);
+
+  // Validate updated name
+  expect(updateData.name).toBe(updatedName);
+
+});
