@@ -1,0 +1,55 @@
+const { test, expect } = require('@playwright/test');
+const fs = require('fs');
+
+test('UI Assignment – DemoQA Book Store Automation', async ({ page }) => {
+
+  const username = "YOUR_USERNAME"; // Replace with manually created username
+  const password = "YOUR_PASSWORD"; // Replace with manually created password
+
+  // Step 1: Navigate to homepage
+  await page.goto("https://demoqa.com/");
+
+  // Step 2: Go to Book Store Application
+  await page.getByText("Book Store Application").click();
+
+  // Step 3: Click on Login
+  await page.getByRole('button', { name: 'Login' }).click();
+
+  // Enter credentials
+  await page.locator("#userName").fill(username);
+  await page.locator("#password").fill(password);
+  await page.getByRole('button', { name: 'Login' }).click();
+
+  // Step 4: Verify login
+  await expect(page.locator("#userName-value")).toHaveText(username);
+  const logoutBtn = page.getByRole('button', { name: 'Log out' });
+  await expect(logoutBtn).toBeVisible();
+
+  // Step 5: Click Book Store button
+  await page.getByRole('button', { name: 'Book Store' }).click();
+
+  // Step 6: Search book
+  const bookName = "Learning JavaScript Design Patterns";
+  await page.locator("#searchBox").fill(bookName);
+
+  // Step 7: Validate search result
+  const bookLink = page.getByRole('link', { name: bookName });
+  await expect(bookLink).toBeVisible();
+
+  // Open the book
+  await bookLink.click();
+
+  // Step 8: Extract book details
+  const title = await page.locator("//label[text()='Title']/following-sibling::label").innerText();
+  const author = await page.locator("//label[text()='Author']/following-sibling::label").innerText();
+  const publisher = await page.locator("//label[text()='Publisher']/following-sibling::label").innerText();
+
+  // Step 9: Write to a file
+  const data = `Title: ${title}\nAuthor: ${author}\nPublisher: ${publisher}`;
+  fs.writeFileSync("book-details.txt", data);
+
+  console.log("Book details saved to book-details.txt");
+
+  // Step 10: Logout
+  await logoutBtn.click();
+});
